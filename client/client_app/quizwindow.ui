@@ -73,24 +73,30 @@
     <property name="text">
      <string>Enter IP address here</string>
     </property>
+    <property name="clearButtonEnabled">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLineEdit" name="portLineEdit">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>670</x>
       <y>40</y>
-      <width>181</width>
+      <width>201</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>Enter port number here</string>
     </property>
+    <property name="clearButtonEnabled">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="portLabel">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>600</x>
       <y>40</y>
       <width>51</width>
       <height>31</height>
@@ -105,11 +111,11 @@
      <string>Port:</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="questionLabel">
     <property name="geometry">
      <rect>
-      <x>36</x>
-      <y>150</y>
+      <x>30</x>
+      <y>140</y>
       <width>1131</width>
       <height>91</height>
      </rect>
@@ -257,22 +263,5 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections>
-  <connection>
-   <sender>exitPushButton</sender>
-   <signal>clicked()</signal>
-   <receiver>QuizWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>702</x>
-     <y>718</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>790</x>
-     <y>747</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

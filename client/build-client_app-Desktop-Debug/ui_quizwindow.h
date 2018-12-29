@@ -34,7 +34,7 @@ public:
     QLineEdit *addressLineEdit;
     QLineEdit *portLineEdit;
     QLabel *portLabel;
-    QLabel *label;
+    QLabel *questionLabel;
     QPushButton *APushButton;
     QPushButton *BPushButton;
     QPushButton *CPushButton;
@@ -73,21 +73,23 @@ public:
         font2.setBold(true);
         font2.setWeight(75);
         addressLineEdit->setFont(font2);
+        addressLineEdit->setClearButtonEnabled(true);
         portLineEdit = new QLineEdit(centralWidget);
         portLineEdit->setObjectName(QStringLiteral("portLineEdit"));
-        portLineEdit->setGeometry(QRect(680, 40, 181, 31));
+        portLineEdit->setGeometry(QRect(670, 40, 201, 31));
+        portLineEdit->setClearButtonEnabled(true);
         portLabel = new QLabel(centralWidget);
         portLabel->setObjectName(QStringLiteral("portLabel"));
-        portLabel->setGeometry(QRect(610, 40, 51, 31));
+        portLabel->setGeometry(QRect(600, 40, 51, 31));
         portLabel->setFont(font1);
-        label = new QLabel(centralWidget);
-        label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(36, 150, 1131, 91));
+        questionLabel = new QLabel(centralWidget);
+        questionLabel->setObjectName(QStringLiteral("questionLabel"));
+        questionLabel->setGeometry(QRect(30, 140, 1131, 91));
         QFont font3;
         font3.setPointSize(16);
-        label->setFont(font3);
-        label->setLayoutDirection(Qt::RightToLeft);
-        label->setAlignment(Qt::AlignCenter);
+        questionLabel->setFont(font3);
+        questionLabel->setLayoutDirection(Qt::RightToLeft);
+        questionLabel->setAlignment(Qt::AlignCenter);
         APushButton = new QPushButton(centralWidget);
         APushButton->setObjectName(QStringLiteral("APushButton"));
         APushButton->setEnabled(false);
@@ -128,7 +130,6 @@ public:
         QuizWindow->setStatusBar(statusBar);
 
         retranslateUi(QuizWindow);
-        QObject::connect(exitPushButton, SIGNAL(clicked()), QuizWindow, SLOT(close()));
 
         QMetaObject::connectSlotsByName(QuizWindow);
     } // setupUi
@@ -141,7 +142,7 @@ public:
         addressLineEdit->setText(QApplication::translate("QuizWindow", "Enter IP address here", Q_NULLPTR));
         portLineEdit->setText(QApplication::translate("QuizWindow", "Enter port number here", Q_NULLPTR));
         portLabel->setText(QApplication::translate("QuizWindow", "Port:", Q_NULLPTR));
-        label->setText(QApplication::translate("QuizWindow", "Questions appear here", Q_NULLPTR));
+        questionLabel->setText(QApplication::translate("QuizWindow", "Questions appear here", Q_NULLPTR));
         APushButton->setText(QApplication::translate("QuizWindow", "A", Q_NULLPTR));
         BPushButton->setText(QApplication::translate("QuizWindow", "B", Q_NULLPTR));
         CPushButton->setText(QApplication::translate("QuizWindow", "C", Q_NULLPTR));

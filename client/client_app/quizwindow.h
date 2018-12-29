@@ -26,6 +26,8 @@ private slots:
 
     void on_DPushButton_clicked();
 
+    void on_exitPushButton_clicked();
+
 private:
     Ui::QuizWindow *ui;
 };
