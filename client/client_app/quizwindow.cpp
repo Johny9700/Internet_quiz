@@ -21,24 +21,34 @@ QuizWindow::~QuizWindow()
 
 void QuizWindow::on_connectButton_clicked()
 {
-    QString qaddress;
-    QString qport;
-    int port;
+    QString qnick;
+    std::string nick;
 
-    try{
-        qaddress = ui->addressLineEdit->text();
-        qport = ui->portLineEdit->text();
-        QMessageBox::warning(this, "Error", "Udało się połączyć z grą.");
-        port = qport.toInt();
+    if((ui->connectButton->text()).toStdString() == "Connect"){
+        try{
+            qnick = ui->nickLineEdit->text();
+            QMessageBox::warning(this, "Error", "Udało się połączyć z grą.");
+            nick = qnick.toStdString();
 
-        ui->questionLabel->setText("Nowe pytanie");
-        ui->APushButton->setEnabled(true);
-        ui->BPushButton->setEnabled(true);
-        ui->CPushButton->setEnabled(true);
-        ui->DPushButton->setEnabled(true);
+            ui->questionLabel->setText("Nowe pytanie");
+            ui->APushButton->setEnabled(true);
+            ui->BPushButton->setEnabled(true);
+            ui->CPushButton->setEnabled(true);
+            ui->DPushButton->setEnabled(true);
+            ui->connectButton->setText("Disconnect");
+            ui->nickLineEdit->setEnabled(false);
+        }
+        catch(...){
+            QMessageBox::warning(this, "Error", "Nie udało się połączyć z grą, spróbuj ponownie.");
+        }
     }
-    catch(...){
-        QMessageBox::warning(this, "Error", "Nie udało się połączyć z grą, spróbuj ponownie.");
+    else{
+        ui->connectButton->setText("Connect");
+        ui->nickLineEdit->setEnabled(true);
+        ui->APushButton->setEnabled(false);
+        ui->BPushButton->setEnabled(false);
+        ui->CPushButton->setEnabled(false);
+        ui->DPushButton->setEnabled(false);
     }
 }
 
