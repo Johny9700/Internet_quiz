@@ -2,6 +2,7 @@
 #define QUIZWINDOW_H
 
 #include <QMainWindow>
+#include <QtNetwork/QTcpSocket>
 
 namespace Ui {
 class QuizWindow;
@@ -28,8 +29,19 @@ private slots:
 
     void on_exitPushButton_clicked();
 
+    void connectedToServer();
+
+    void read();
+
+    void displayError(QAbstractSocket::SocketError socketError);
+
+    void disconnectedFromServer();
+
 private:
     Ui::QuizWindow *ui;
+    QTcpSocket *tcpSocket;
+    void gameMode(bool);
+    void connectionMode(bool);
 };
 
 #endif // QUIZWINDOW_H

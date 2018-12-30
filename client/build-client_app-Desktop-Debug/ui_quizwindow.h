@@ -46,6 +46,8 @@ public:
     QLabel *firstPlayerScoreLabel;
     QLabel *secondPlayerScoreLabel;
     QLabel *thirdPlayerScoreLabel;
+    QLabel *yourTimeLabel;
+    QLabel *timeLabel;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -83,7 +85,7 @@ public:
         nickLineEdit->setClearButtonEnabled(true);
         questionLabel = new QLabel(centralWidget);
         questionLabel->setObjectName(QStringLiteral("questionLabel"));
-        questionLabel->setGeometry(QRect(30, 140, 1131, 91));
+        questionLabel->setGeometry(QRect(30, 160, 1131, 91));
         QFont font3;
         font3.setPointSize(16);
         questionLabel->setFont(font3);
@@ -118,12 +120,12 @@ public:
         exitPushButton->setGeometry(QRect(490, 650, 221, 41));
         yourScoreLabel = new QLabel(centralWidget);
         yourScoreLabel->setObjectName(QStringLiteral("yourScoreLabel"));
-        yourScoreLabel->setGeometry(QRect(520, 50, 101, 51));
+        yourScoreLabel->setGeometry(QRect(520, 20, 101, 51));
         yourScoreLabel->setFont(font1);
         yourScoreLabel->setScaledContents(false);
         scoreLabel = new QLabel(centralWidget);
         scoreLabel->setObjectName(QStringLiteral("scoreLabel"));
-        scoreLabel->setGeometry(QRect(620, 50, 61, 51));
+        scoreLabel->setGeometry(QRect(620, 20, 61, 51));
         scoreLabel->setFont(font1);
         scoreLabel->setScaledContents(false);
         scoreLabel->setAlignment(Qt::AlignCenter);
@@ -148,6 +150,18 @@ public:
         thirdPlayerScoreLabel->setObjectName(QStringLiteral("thirdPlayerScoreLabel"));
         thirdPlayerScoreLabel->setGeometry(QRect(1110, 90, 61, 20));
         thirdPlayerScoreLabel->setAlignment(Qt::AlignCenter);
+        yourTimeLabel = new QLabel(centralWidget);
+        yourTimeLabel->setObjectName(QStringLiteral("yourTimeLabel"));
+        yourTimeLabel->setGeometry(QRect(520, 70, 101, 51));
+        yourTimeLabel->setFont(font1);
+        yourTimeLabel->setScaledContents(false);
+        yourTimeLabel->setAlignment(Qt::AlignCenter);
+        timeLabel = new QLabel(centralWidget);
+        timeLabel->setObjectName(QStringLiteral("timeLabel"));
+        timeLabel->setGeometry(QRect(620, 70, 61, 51));
+        timeLabel->setFont(font1);
+        timeLabel->setScaledContents(false);
+        timeLabel->setAlignment(Qt::AlignCenter);
         QuizWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(QuizWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -185,6 +199,8 @@ public:
         firstPlayerScoreLabel->setText(QApplication::translate("QuizWindow", "0", Q_NULLPTR));
         secondPlayerScoreLabel->setText(QApplication::translate("QuizWindow", "0", Q_NULLPTR));
         thirdPlayerScoreLabel->setText(QApplication::translate("QuizWindow", "0", Q_NULLPTR));
+        yourTimeLabel->setText(QApplication::translate("QuizWindow", "Time:", Q_NULLPTR));
+        timeLabel->setText(QApplication::translate("QuizWindow", "0", Q_NULLPTR));
     } // retranslateUi
 
 };
