@@ -42,6 +42,9 @@ private:
     QTcpSocket *tcpSocket;
     void gameMode(bool);
     void connectionMode(bool);
+    void setQuestionAndAnswers(QString);
+    void gameFinished(QString);
+    void setTop3(QString);
 };
 
 #endif // QUIZWINDOW_H

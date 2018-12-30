@@ -38,6 +38,7 @@ void QuizWindow::connectedToServer(){
 
 void QuizWindow::disconnectedFromServer(){
     gameMode(false);
+    connectionMode(false);
 }
 
 void QuizWindow::displayError(QAbstractSocket::SocketError socketError){
@@ -56,17 +57,42 @@ void QuizWindow::displayError(QAbstractSocket::SocketError socketError){
 }
 
 void QuizWindow::read(){
-     QString messageFromServer = tcp_socket->readAll();
+     QString messageFromServer = tcpSocket->readAll();
      QString typeOfMessage = messageFromServer.left(2);
-     int lengthMessage = len(messageFromServer);
+     int lengthMessage = messageFromServer.length();
      messageFromServer = messageFromServer.right(lengthMessage - 2);
 
-     switch(typeOfMessage){
+     switch(typeOfMessage.toInt()){
      case 10:
-
-         breaak;
+         connectionMode(true);
+         break;
+     case 11:
+         connectionMode(false);
+         QMessageBox::information(this,"Forbidden nick", "Please change your nick and try again.");
+         tcpSocket->abort();
+         break;
+     case 20:
+         setQuestionAndAnswers(messageFromServer);
+         break;
+     case 21:
+         if(messageFromServer == '0'){
+             gameMode(false);
+         }
+         ui->timeLabel->setText(messageFromServer);
+         break;
+     case 22:
+         ui->scoreLabel->setText(messageFromServer);
+         break;
+     case 23:
+         ui->questionLabel->setText(messageFromServer);
+         break;
+     case 24:
+         gameFinished(messageFromServer);
+         break;
+     case 30:
+         setTop3(messageFromServer);
+         break;
      }
-
 
 }
 
@@ -96,21 +122,53 @@ void QuizWindow::connectionMode(bool mode){
     }
 }
 
+void QuizWindow::setQuestionAndAnswers(QString message){
+    QStringList questionsAndAnswers = message.split( "`" );
+    ui->questionLabel->setText(questionsAndAnswers[0]);
+    ui->APushButton->setText(questionsAndAnswers[1]);
+    ui->BPushButton->setText(questionsAndAnswers[2]);
+    ui->CPushButton->setText(questionsAndAnswers[3]);
+    ui->DPushButton->setText(questionsAndAnswers[4]);
+    gameMode(true);
+}
+
+void QuizWindow::gameFinished(QString message){
+    message.append("\nDo you want to play again?");
+    QMessageBox::StandardButton reply;
+    tcpSocket->abort();
+    reply = QMessageBox::question(this, "Game finished", message, QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        QString addr = "127.0.0.1";
+        quint16 port = 8000;
+        tcpSocket->connectToHost(addr,port);
+    }
+}
+
+void QuizWindow::setTop3(QString message){
+    QStringList topPlayers = message.split( " " );
+    ui->firstPlayerLabel->setText(topPlayers[0]);
+    ui->firstPlayerScoreLabel->setText(topPlayers[1]);
+    ui->secondPlayerLabel->setText(topPlayers[2]);
+    ui->secondPlayerScoreLabel->setText(topPlayers[3]);
+    ui->thirdPlayerLabel->setText(topPlayers[4]);
+    ui->thirdPlayerScoreLabel->setText(topPlayers[5]);
+}
+
 void QuizWindow::on_connectButton_clicked()
 {
     if((ui->connectButton->text()).toStdString() == "Connect"){
-        try{
-            QString addr = "127.0.0.1";
-            quint16 port = 8000;
-
-            tcpSocket->connectToHost(addr,port);
-
-            ui->questionLabel->setText("Nowe pytanie");
-//            gameMode(true);
-
+        QString addr = "127.0.0.1";
+        quint16 port = 8000;
+        QString nick;
+        nick = ui->nickLineEdit->text();
+        if(nick == ""){
+            QMessageBox::information(this, "Warning", "Your nick has to be longer.");
         }
-        catch(...){
-            QMessageBox::warning(this, "Error", "Nie udało się połączyć z grą, spróbuj ponownie.");
+        else if(nick.contains(" ")){
+           QMessageBox::information(this, "Warning", "Your nick can't contain whitespace.");
+        }
+        else{
+            tcpSocket->connectToHost(addr,port);
         }
     }
     else{
@@ -122,24 +180,28 @@ void QuizWindow::on_APushButton_clicked()
 {
     QString answer = "20A";
     tcpSocket->write(answer.toUtf8());
+    gameMode(false);
 }
 
 void QuizWindow::on_BPushButton_clicked()
 {
     QString answer = "20B";
     tcpSocket->write(answer.toUtf8());
+    gameMode(false);
 }
 
 void QuizWindow::on_CPushButton_clicked()
 {
     QString answer = "20C";
     tcpSocket->write(answer.toUtf8());
+    gameMode(false);
 }
 
 void QuizWindow::on_DPushButton_clicked()
 {
     QString answer = "20D";
     tcpSocket->write(answer.toUtf8());
+    gameMode(false);
 }
 
 void QuizWindow::on_exitPushButton_clicked()

@@ -82,6 +82,7 @@ public:
         font2.setBold(true);
         font2.setWeight(75);
         nickLineEdit->setFont(font2);
+        nickLineEdit->setMaxLength(15);
         nickLineEdit->setClearButtonEnabled(true);
         questionLabel = new QLabel(centralWidget);
         questionLabel->setObjectName(QStringLiteral("questionLabel"));
@@ -184,7 +185,7 @@ public:
         QuizWindow->setWindowTitle(QApplication::translate("QuizWindow", "QuizWindow", Q_NULLPTR));
         connectButton->setText(QApplication::translate("QuizWindow", "Connect", Q_NULLPTR));
         nickLabel->setText(QApplication::translate("QuizWindow", "Nick:", Q_NULLPTR));
-        nickLineEdit->setText(QApplication::translate("QuizWindow", "Enter your nick here", Q_NULLPTR));
+        nickLineEdit->setText(QApplication::translate("QuizWindow", "Enter your nick", Q_NULLPTR));
         questionLabel->setText(QApplication::translate("QuizWindow", "Questions appear here", Q_NULLPTR));
         APushButton->setText(QApplication::translate("QuizWindow", "A", Q_NULLPTR));
         BPushButton->setText(QApplication::translate("QuizWindow", "B", Q_NULLPTR));
