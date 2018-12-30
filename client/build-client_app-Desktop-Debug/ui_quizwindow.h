@@ -48,6 +48,8 @@ public:
     QLabel *thirdPlayerScoreLabel;
     QLabel *yourTimeLabel;
     QLabel *timeLabel;
+    QLabel *amountOfAnswersLabel;
+    QLabel *answersLabel;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -153,16 +155,28 @@ public:
         thirdPlayerScoreLabel->setAlignment(Qt::AlignCenter);
         yourTimeLabel = new QLabel(centralWidget);
         yourTimeLabel->setObjectName(QStringLiteral("yourTimeLabel"));
-        yourTimeLabel->setGeometry(QRect(520, 70, 101, 51));
+        yourTimeLabel->setGeometry(QRect(430, 60, 101, 51));
         yourTimeLabel->setFont(font1);
         yourTimeLabel->setScaledContents(false);
         yourTimeLabel->setAlignment(Qt::AlignCenter);
         timeLabel = new QLabel(centralWidget);
         timeLabel->setObjectName(QStringLiteral("timeLabel"));
-        timeLabel->setGeometry(QRect(620, 70, 61, 51));
+        timeLabel->setGeometry(QRect(530, 60, 61, 51));
         timeLabel->setFont(font1);
         timeLabel->setScaledContents(false);
         timeLabel->setAlignment(Qt::AlignCenter);
+        amountOfAnswersLabel = new QLabel(centralWidget);
+        amountOfAnswersLabel->setObjectName(QStringLiteral("amountOfAnswersLabel"));
+        amountOfAnswersLabel->setGeometry(QRect(700, 60, 61, 51));
+        amountOfAnswersLabel->setFont(font1);
+        amountOfAnswersLabel->setScaledContents(false);
+        amountOfAnswersLabel->setAlignment(Qt::AlignCenter);
+        answersLabel = new QLabel(centralWidget);
+        answersLabel->setObjectName(QStringLiteral("answersLabel"));
+        answersLabel->setGeometry(QRect(600, 60, 101, 51));
+        answersLabel->setFont(font1);
+        answersLabel->setScaledContents(false);
+        answersLabel->setAlignment(Qt::AlignCenter);
         QuizWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(QuizWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -202,6 +216,8 @@ public:
         thirdPlayerScoreLabel->setText(QApplication::translate("QuizWindow", "0", Q_NULLPTR));
         yourTimeLabel->setText(QApplication::translate("QuizWindow", "Time:", Q_NULLPTR));
         timeLabel->setText(QApplication::translate("QuizWindow", "0", Q_NULLPTR));
+        amountOfAnswersLabel->setText(QApplication::translate("QuizWindow", "0", Q_NULLPTR));
+        answersLabel->setText(QApplication::translate("QuizWindow", "Answers:", Q_NULLPTR));
     } // retranslateUi
 
 };

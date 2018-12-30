@@ -352,8 +352,8 @@
    <widget class="QLabel" name="yourTimeLabel">
     <property name="geometry">
      <rect>
-      <x>520</x>
-      <y>70</y>
+      <x>430</x>
+      <y>60</y>
       <width>101</width>
       <height>51</height>
      </rect>
@@ -376,8 +376,8 @@
    <widget class="QLabel" name="timeLabel">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>70</y>
+      <x>530</x>
+      <y>60</y>
       <width>61</width>
       <height>51</height>
      </rect>
@@ -389,6 +389,54 @@
     </property>
     <property name="text">
      <string>0</string>
+    </property>
+    <property name="scaledContents">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="amountOfAnswersLabel">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>60</y>
+      <width>61</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+    <property name="scaledContents">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="answersLabel">
+    <property name="geometry">
+     <rect>
+      <x>600</x>
+      <y>60</y>
+      <width>101</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Answers:</string>
     </property>
     <property name="scaledContents">
      <bool>false</bool>

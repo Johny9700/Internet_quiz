@@ -89,6 +89,9 @@ void QuizWindow::read(){
      case 24:
          gameFinished(messageFromServer);
          break;
+     case 25:
+         ui->amountOfAnswersLabel->setText(messageFromServer);
+         break;
      case 30:
          setTop3(messageFromServer);
          break;
