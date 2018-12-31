@@ -12,6 +12,9 @@ QuizWindow::QuizWindow(QWidget *parent) :
     ui(new Ui::QuizWindow)
 {
     ui->setupUi(this);
+
+    conf = new configure();
+
     tcpSocket = new QTcpSocket(this);
 
     connect(tcpSocket, SIGNAL(connected()), this, SLOT(connectedToServer()));
@@ -33,6 +36,7 @@ void QuizWindow::connectedToServer(){
     nick = qnick.toUtf8();
     tcpSocket->write(nick);
     gameMode(true);
+    connectionMode(true);
 
 }
 
@@ -141,8 +145,9 @@ void QuizWindow::gameFinished(QString message){
     tcpSocket->abort();
     reply = QMessageBox::question(this, "Game finished", message, QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes) {
-        QString addr = "127.0.0.1";
-        quint16 port = 8000;
+        QString addr = (QString::fromStdString((conf->getAddr()))).trimmed();
+        int portint = std::stoi(conf->getPort());
+        quint16 port = quint16(portint);
         tcpSocket->connectToHost(addr,port);
     }
 }
@@ -160,8 +165,9 @@ void QuizWindow::setTop3(QString message){
 void QuizWindow::on_connectButton_clicked()
 {
     if((ui->connectButton->text()).toStdString() == "Connect"){
-        QString addr = "127.0.0.1";
-        quint16 port = 8000;
+        QString addr = (QString::fromStdString((conf->getAddr()))).trimmed();
+        int portint = std::stoi(conf->getPort());
+        quint16 port = quint16(portint);
         QString nick;
         nick = ui->nickLineEdit->text();
         if(nick == ""){

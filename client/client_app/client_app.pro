@@ -25,10 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        quizwindow.cpp
+        quizwindow.cpp \
+    configure.cpp
 
 HEADERS += \
-        quizwindow.h
+        quizwindow.h \
+    configure.h
 
 FORMS += \
         quizwindow.ui

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QtNetwork/QTcpSocket>
+#include "configure.h"
 
 namespace Ui {
 class QuizWindow;
@@ -40,6 +41,7 @@ private slots:
 private:
     Ui::QuizWindow *ui;
     QTcpSocket *tcpSocket;
+    configure *conf;
     void gameMode(bool);
     void connectionMode(bool);
     void setQuestionAndAnswers(QString);

@@ -51,9 +51,11 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = ../client_app/main.cpp \
-		../client_app/quizwindow.cpp moc_quizwindow.cpp
+		../client_app/quizwindow.cpp \
+		../client_app/configure.cpp moc_quizwindow.cpp
 OBJECTS       = main.o \
 		quizwindow.o \
+		configure.o \
 		moc_quizwindow.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
@@ -129,8 +131,10 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exceptions.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
-		../client_app/client_app.pro ../client_app/quizwindow.h ../client_app/main.cpp \
-		../client_app/quizwindow.cpp
+		../client_app/client_app.pro ../client_app/quizwindow.h \
+		../client_app/configure.h ../client_app/main.cpp \
+		../client_app/quizwindow.cpp \
+		../client_app/configure.cpp
 QMAKE_TARGET  = client_app
 DESTDIR       = 
 TARGET        = client_app
@@ -316,8 +320,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../client_app/quizwindow.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../client_app/main.cpp ../client_app/quizwindow.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../client_app/quizwindow.h ../client_app/configure.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../client_app/main.cpp ../client_app/quizwindow.cpp ../client_app/configure.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../client_app/quizwindow.ui $(DISTDIR)/
 
 
@@ -383,6 +387,9 @@ main.o: ../client_app/main.cpp ../client_app/quizwindow.h
 quizwindow.o: ../client_app/quizwindow.cpp ../client_app/quizwindow.h \
 		ui_quizwindow.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o quizwindow.o ../client_app/quizwindow.cpp
+
+configure.o: ../client_app/configure.cpp ../client_app/configure.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o configure.o ../client_app/configure.cpp
 
 moc_quizwindow.o: moc_quizwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_quizwindow.o moc_quizwindow.cpp
