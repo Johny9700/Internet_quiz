@@ -12,9 +12,7 @@ QuizWindow::QuizWindow(QWidget *parent) :
     ui(new Ui::QuizWindow)
 {
     ui->setupUi(this);
-
     conf = new configure();
-
     tcpSocket = new QTcpSocket(this);
 
     connect(tcpSocket, SIGNAL(connected()), this, SLOT(connectedToServer()));
@@ -29,15 +27,7 @@ QuizWindow::~QuizWindow()
 }
 
 void QuizWindow::connectedToServer(){
-    QString qnick;
-    QByteArray nick;
-    qnick = "10";
-    qnick.append(ui->nickLineEdit->text());
-    nick = qnick.toUtf8();
-    tcpSocket->write(nick);
-    gameMode(true);
-    connectionMode(true);
-
+    sendNick(ui->nickLineEdit->text());
 }
 
 void QuizWindow::disconnectedFromServer(){
@@ -72,8 +62,8 @@ void QuizWindow::read(){
          break;
      case 11:
          connectionMode(false);
+         ui->connectButton->setText("Set new nick");
          QMessageBox::information(this,"Forbidden nick", "Please change your nick and try again.");
-         tcpSocket->abort();
          break;
      case 20:
          setQuestionAndAnswers(messageFromServer);
@@ -162,6 +152,26 @@ void QuizWindow::setTop3(QString message){
     ui->thirdPlayerScoreLabel->setText(topPlayers[5]);
 }
 
+bool QuizWindow::verifyNick(QString nick){
+    bool nickOK = true;
+    if(nick == ""){
+        QMessageBox::information(this, "Warning", "Your nick has to be longer.");
+        nickOK = false;
+    }
+    else if(nick.contains(" ")){
+       QMessageBox::information(this, "Warning", "Your nick can't contain whitespace.");
+       nickOK = false;
+    }
+    return nickOK;
+}
+
+void QuizWindow::sendNick(QString qnick){
+    QByteArray nick;
+    nick = "10";
+    nick.append(qnick.toUtf8());
+    tcpSocket->write(nick);
+}
+
 void QuizWindow::on_connectButton_clicked()
 {
     if((ui->connectButton->text()).toStdString() == "Connect"){
@@ -178,6 +188,13 @@ void QuizWindow::on_connectButton_clicked()
         }
         else{
             tcpSocket->connectToHost(addr,port);
+        }
+    }
+    else if((ui->connectButton->text()).toStdString() == "Set new nick"){
+        QString nick;
+        nick = ui->nickLineEdit->text();
+        if(verifyNick(nick) == true){
+          sendNick(nick);
         }
     }
     else{
@@ -218,6 +235,7 @@ void QuizWindow::on_exitPushButton_clicked()
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Are you sure?", "Quit?", QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes) {
+        tcpSocket->abort();
         this->close();
     }
 }

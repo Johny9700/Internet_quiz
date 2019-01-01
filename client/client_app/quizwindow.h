@@ -47,6 +47,8 @@ private:
     void setQuestionAndAnswers(QString);
     void gameFinished(QString);
     void setTop3(QString);
+    bool verifyNick(QString);
+    void sendNick(QString);
 };
 
 #endif // QUIZWINDOW_H
