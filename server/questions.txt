@@ -1,0 +1,30 @@
+Ile wynosi 2 + 2:
+A: 1
+B: 2
+C: 3
+D: 4
+D
+Stolicą Polski jest:
+A: Warszawa
+B: Poznań
+C: Wrocław
+D: Kraków
+A
+bbb:
+A: aaa
+B: bbb
+C: ccc
+D: ddd
+B
+33:
+A: 11
+B: 22
+C: 33
+D: 44
+C
+66666:
+A: 66666
+B: 77777
+C: 88888
+D: 99999
+A
