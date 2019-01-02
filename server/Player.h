@@ -8,6 +8,7 @@ struct Player
     int clientFd;
     std::string name;
     int score;
+    bool answeared;
 };
 
 #endif // PLAYER_H

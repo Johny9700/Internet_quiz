@@ -3,16 +3,17 @@
 
 #include <thread>
 #include <vector>
+#include <string>
 #include "Player.h"
+#include "NetworkUtils.h"
 
 class TimeCounter
 {
 private:
-    std::thread myThread;
     std::vector<Player*>& players;
     bool gameRunning;
     int seconds;
-    void threadMain();
+    void sendTimeToPlayers();
 public:
     TimeCounter(std::vector<Player*>& players);
     ~TimeCounter();

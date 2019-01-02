@@ -8,6 +8,7 @@
 #include "QuestionDatabase.h"
 #include "Player.h"
 #include "TimeCounter.h"
+#include "NetworkUtils.h"
 
 class GameServer
 {
@@ -19,6 +20,7 @@ private:
     std::mutex playersVectorLock;
     QuestionDatabase questionDatabase;
     Question currentQuestion;
+    int currentQuestionStats[4];
     TimeCounter timeCounter;
     void clientThread(int clientFd);
     void gameThread();
