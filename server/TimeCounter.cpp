@@ -37,9 +37,11 @@ void TimeCounter::stop()
 
 void TimeCounter::sendTimeToPlayers()
 {
+    std::string prefix("21"); //prefiz for client app
+    std::string message = prefix + std::to_string(seconds);
     for(auto p : players)
-    {
-        NetworkUtils::sendOnSocket(p->clientFd, std::to_string(seconds));
+    { 
+        NetworkUtils::sendOnSocket(p->clientFd, message);
     }
 }
 

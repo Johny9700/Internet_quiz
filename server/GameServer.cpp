@@ -14,6 +14,7 @@ GameServer::GameServer(int num, int time) : questionDatabase("questions.txt"), t
 {
     numOfQuestionsPerGame = num;
     timePerQuestion = time;
+    gameIsRunning = false;
 }
 
 GameServer::~GameServer()
@@ -27,20 +28,20 @@ GameServer::~GameServer()
         delete p;
     }
     players.clear();
-    printf("server object destroyed\n"); //WYWAL TO
+    printf("server object destroyed\n");
 }
 
 void GameServer::clientThread(int clientFd)
 {
-    printf("odpalono watek dla clientfd: %i\n", clientFd);
+    printf("Started thread for clientfd: %i\n", clientFd);
     Player* player;
     bool end = false;
 
     // get nick from client and save to vector
     while(!end)
     {
-        std::string temp = NetworkUtils::readFromSocket(clientFd);
-        if(temp.length() < 1)
+        std::string message;
+        if(NetworkUtils::readFromSocket(clientFd, message) == false)
         {
             printf("removing %d\n", clientFd);
             shutdown(clientFd, SHUT_RDWR);
@@ -49,16 +50,21 @@ void GameServer::clientThread(int clientFd)
             break;
         } else
         {
-            if(nicknameUnique(temp))
+            if(nicknameUnique(message))
             {
                 sendNickCorrect(clientFd, true);
                 player = new Player();
                 player->clientFd = clientFd;
-                player->name = temp;
+                player->name = message;
                 player->score = 0;
                 player->answeared = false;
+                player->currentPoints = 0;
                 std::unique_lock<std::mutex> lock(playersVectorLock);
                 players.push_back(player);
+                if(gameIsRunning)
+                {
+                    sendInfoToNewPlayer(clientFd);
+                }
                 break;
             }
             else
@@ -68,39 +74,38 @@ void GameServer::clientThread(int clientFd)
         }
     }
     
-    //communication during game
+    //getting answers from players here
     while(!end)
     {
-        std::string temp = NetworkUtils::readFromSocket(clientFd);
-        int currentQuestionScore = timeCounter.getTimeLeft();
-        
-        if(temp.length() < 1)
+        if(player == nullptr)
+            printf("NULL PLAYER!!!!");
+        std::string answer;
+        if(NetworkUtils::readFromSocket(clientFd, answer) == false)
         {
             printf("removing %d\n", clientFd);
+            std::unique_lock<std::mutex> lock(playersVectorLock);
             removePlayerFromGame(clientFd);
-            shutdown(clientFd, SHUT_RDWR);
-            close(clientFd);
             end = true;
         } else
         {
-            //TODO check if answer correct and add points to score
-            printf("dostalem odpowiedz %s\n", temp.c_str());
-            if(player->answeared == false && temp[0] == currentQuestion.correct[0])
+            int currentQuestionScore = timeCounter.getTimeLeft();
+            printf("dostalem odpowiedz %s\n", answer.c_str());
+            if(currentQuestionScore > 0)
             {
-                player->score += currentQuestionScore;
+                std::unique_lock<std::mutex> lock(playersVectorLock);
+                if(player->answeared == false && answer[0] == currentQuestion.correct[0])
+                {
+                    player->currentPoints = currentQuestionScore;
+                    player->score += currentQuestionScore;
+                    printf("%s udzielił dobrej odpowiedzi, dostaje +%d punktow\n", player->name.c_str(), currentQuestionScore);
+                }
                 player->answeared = true;
-                printf("%s udzielił dobrej odpowiedzi, dostaje +%d punktow\n", player->name.c_str(), currentQuestionScore);
+                currentQuestionStats[(int)(answer[0]-'A')] += 1;
+                broadcastAnswerCount();
             }
-            else
-            {
-                printf("'%c' to nie '%c'", temp[0], currentQuestion.correct[0]);
-            }
-            
-            timeCounter.stop();
-            //czytaj tylko jeden znak
         }
     }
-    printf("wywalamy watek\n");
+    printf("removing clientFd: %i\n", clientFd);
 }
 
 void GameServer::gameThread()
@@ -109,32 +114,81 @@ void GameServer::gameThread()
     {
         int questionsLeft = numOfQuestionsPerGame;
         //waiting for first player
+        printf("waiting for first player...");
         while(players.size() < 1)
         {
             sleep(1);
         }
         //start game after 1 minute
+        printf("waiting 60 seconds or longer if only one plater...");
         sleep(10);//TODO set 60, 10 is for testing
         //or wait if there is only one player
         while(players.size() < 2)
         {
             sleep(1);
         }
-        sleep(2); //player have same time after choosing nickname
+        printf("OK, have enough players, starting in 2 seconds...");
+        sleep(2); //give player time after choosing nickname
         printf("Rozpoczynamy gre\n");
         while(questionsLeft > 0)
         {
-            printf("1\n");
+            cleanUpBeforeQuestion();
+            printf("1 getNextQuestion\n");
             currentQuestion = questionDatabase.getNextQuestion();
             questionsLeft -= 1;
-            printf("2\n");
+            printf("2 broadcastQuestion\n");
             broadcastQuestion();
-            printf("3\n");
+            printf("3 startTimer\n");
             timeCounter.start(timePerQuestion+10);
-            printf("4\n");
-            sleep(2);
+            printf("4 end of question, send stats\n");
+            broadcastStats();
+            printf("<<<<<<waiting 5 seconds>>>>>>\n");
+            sleep(5);
+        }
+        sendEndOfGameInfo();
+    }
+}
+
+void GameServer::sendEndOfGameInfo()
+{
+    std::unique_lock<std::mutex> lock(playersVectorLock);
+    for(auto p : players)
+    {
+        if(NetworkUtils::sendOnSocket(p->clientFd, std::string("24")) == false)
+        {
+            removePlayerFromGame(p->clientFd);
         }
     }
+    sleep(5);
+}
+
+void GameServer::sendInfoToNewPlayer(int clientFd)
+{
+    std::string temp;
+    std::stringstream ss;
+    //"`" is delimiter to split in client
+    ss << "20" << currentQuestion.question << "`";
+    for(int i=0; i<4; i++)
+        ss << currentQuestion.choices[i] << "`";
+    temp = ss.str();
+
+    if(NetworkUtils::sendOnSocket(clientFd, temp) == false)
+    {
+        removePlayerFromGame(clientFd);
+    }
+
+    temp = std::to_string(timeCounter.getTimeLeft());
+    if(NetworkUtils::sendOnSocket(clientFd, temp) == false)
+    {
+        removePlayerFromGame(clientFd);
+    }
+
+    broadcastAnswerCount();
+
+    //TODO wyslij też ile graczy odpowiedzialo na to pytanie
+    // oraz Top3 graczy
+
+
 }
 
 void GameServer::broadcastQuestion()
@@ -146,20 +200,98 @@ void GameServer::broadcastQuestion()
         ss << currentQuestion.choices[i] << "`";
     std::string temp = ss.str();
 
-    printf("broadcastQuestion before mutex\n");
     std::unique_lock<std::mutex> lock(playersVectorLock);
     //TODO send to new players, who joined during answering time
     for(auto p : players)
     {
-        printf("broadcastQuestion for loop before send\n");
-        int res = NetworkUtils::sendOnSocket(p->clientFd, temp);
-        printf("broadcastQuestion for loop after send\n");
-        if(res != 0)
+        if(NetworkUtils::sendOnSocket(p->clientFd, temp) == false)
         {
             removePlayerFromGame(p->clientFd);
-            printf("wywal gracza wewnatrz broadcastQuestion\n");
         }
-        printf("broadcastQuestion for loop after if(player socket problem)\n");
+    }
+}
+
+void GameServer::broadcastAnswerCount()
+{
+    unsigned int count = 0;
+    for(auto p : players)
+    {
+        if(p->answeared == true)
+            count += 1;
+    }
+    if(count == players.size())
+        timeCounter.stop();
+
+    std::string prefix(" "); //for client, TODO zmień na "25", to jest do wyswietlania w socat
+    std::string message = prefix + std::to_string(count);
+    for(auto p : players)
+    {
+        if(NetworkUtils::sendOnSocket(p->clientFd, message) == false)
+        {
+            removePlayerFromGame(p->clientFd);
+        }
+    }
+}
+
+void GameServer::cleanUpBeforeQuestion()
+{
+    for(int i=0; i<4; i++)
+        currentQuestionStats[i] = 0;
+    std::unique_lock<std::mutex> lock(playersVectorLock);
+    for(auto p : players)
+    {
+        p->answeared = false;
+        p->currentPoints = 0;
+    }
+}
+
+std::string GameServer::prepareTop3message()
+{
+    std::stringstream ss;
+    //Formatting nick1: score1 nick2: score2 nick3: score3
+    //or --: -- if less than 3 players
+    //TODO later
+    ss << "30" << "gracz1: " << 28 << " gracz2: " << 14 << " --" << "--"; //only for testing
+    std::string message = ss.str();
+    return message;
+}
+
+void GameServer::broadcastStats()
+{
+    //Prepate common message for all players
+    std::stringstream ss;
+    ss << "23";
+    for(int i=0; i<4; i++)
+        ss << (char)('A'+i) << ": " << currentQuestionStats[i] << std::endl;
+    std::string forAllPlayers = ss.str();
+
+    std::unique_lock<std::mutex> lock(playersVectorLock);
+    std::string messageTop3 = prepareTop3message();
+    for(auto p : players)
+    {
+        //Send Answer stats and points for this question
+        std::string forThisPlayer = forAllPlayers;
+        forThisPlayer += std::string("You get ");
+        forThisPlayer += std::to_string(p->currentPoints);
+        forThisPlayer += std::string(" for this question");
+        if(NetworkUtils::sendOnSocket(p->clientFd, forThisPlayer) == false)
+        {
+            removePlayerFromGame(p->clientFd);
+        }
+        
+        //Send total score
+        forThisPlayer = std::string("22") + std::to_string(p->score);
+        if(NetworkUtils::sendOnSocket(p->clientFd, forThisPlayer) == false)
+        {
+            removePlayerFromGame(p->clientFd);
+        }
+
+        //Send top3
+        forThisPlayer = std::string("22") + std::to_string(p->score);
+        if(NetworkUtils::sendOnSocket(p->clientFd, messageTop3) == false)
+        {
+            removePlayerFromGame(p->clientFd);
+        }
     }
 }
 
@@ -176,32 +308,31 @@ void GameServer::sendNickCorrect(int clientFD, bool correct)
 
 bool GameServer::nicknameUnique(std::string nickname)
 {
-    printf("sprawdzam imie: %s\n", nickname.c_str());
+    printf("checking if name is unique: %s\n", nickname.c_str());
     std::unique_lock<std::mutex> lock(playersVectorLock);
     for(auto p : players)
     {
         if(p->name == nickname)
         {
-            printf("imie: %s jest zajete\n", nickname.c_str());
+            printf("name: %s is already used by other player\n", nickname.c_str());
             return false;
         }
     }
-    printf("imie: '%s' jest ok\n", nickname.c_str());
+    printf("name: '%s' is ok\n", nickname.c_str());
     return true;
 }
 
 void GameServer::removePlayerFromGame(int clientFd)
 {
-    std::unique_lock<std::mutex> lock(playersVectorLock);
-    printf("wywalam gracza z vectora\n");
-    for (unsigned int i = 0; i<players.size(); i++) 
+    for (unsigned int i = 0; i<players.size(); i++)
     {       
         if(players[i]->clientFd == clientFd)
         {
-            printf("Wywalam gracza o fd %d, name: %s\n", players[i]->clientFd, players[i]->name.c_str());
+            printf("Removing player clientFd %d, name: %s\n", players[i]->clientFd, players[i]->name.c_str());
             shutdown(players[i]->clientFd, SHUT_RDWR);
             close(players[i]->clientFd);
             delete players[i];
+            players[i] = nullptr;
             players.erase(players.begin() + i);
             break;
         }
@@ -210,7 +341,7 @@ void GameServer::removePlayerFromGame(int clientFd)
 
 void GameServer::run(uint16_t port)
 {
-    printf("server started\n");//WYWAL TO
+    printf("server started\n");
     // create socket
     servFd = socket(AF_INET, SOCK_STREAM, 0);
     if(servFd == -1) error(1, errno, "socket failed");
@@ -242,5 +373,5 @@ void GameServer::run(uint16_t port)
 
         std::thread(&GameServer::clientThread, this, clientFd).detach();
     }
-    printf("server stopped\n");//WYWAL TO
+    printf("server stopped\n");
 }

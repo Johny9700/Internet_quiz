@@ -17,22 +17,26 @@ namespace NetworkUtils
         if(res) error(1,errno, "setsockopt failed");
     }
 
-    int sendOnSocket(int sockFd, std::string message)
+    bool sendOnSocket(int sockFd, std::string message)
     {
         int count = message.length();
         int res = send(sockFd, message.c_str(), count, MSG_DONTWAIT);
         if(res == count)
-            return 0;
+            return true;
         else
-            return -1;
+            return false;
     }
     
-    std::string readFromSocket(int sockFd)
+    bool readFromSocket(int sockFd, std::string &message)
     {
         char buffer[255];
         int count = read(sockFd, buffer, 255);
         if(count < 1)
-            return std::string("");
+        {
+            message = "";
+            return false;
+        }
+            
         std::string temp(buffer);
         temp = temp.substr(0, count);
 
@@ -41,6 +45,7 @@ namespace NetworkUtils
             //get rid of endline, useful when testing with socat
             temp.erase(temp.length()-1);
         }
-        return temp;
+        message = temp;
+        return true;
     }
 }

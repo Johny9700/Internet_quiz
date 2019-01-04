@@ -9,6 +9,7 @@ struct Player
     std::string name;
     int score;
     bool answeared;
+    int currentPoints;
 };
 
 #endif // PLAYER_H

@@ -17,8 +17,8 @@ namespace NetworkUtils
     // sets SO_REUSEADDR
     void setReuseAddr(int sock);
     // sends message on socket and returns 0 for success, -1 for failure
-    int sendOnSocket(int sockFd, std::string message);
-    std::string readFromSocket(int sockFd);
+    bool sendOnSocket(int sockFd, std::string message);
+    bool readFromSocket(int sockFd, std::string &message);
 }
 
 #endif // NETWORKUTILS_H

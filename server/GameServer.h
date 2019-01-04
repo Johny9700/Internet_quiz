@@ -21,12 +21,19 @@ private:
     QuestionDatabase questionDatabase;
     Question currentQuestion;
     int currentQuestionStats[4];
+    bool gameIsRunning;
     TimeCounter timeCounter;
     void clientThread(int clientFd);
     void gameThread();
+    void sendEndOfGameInfo();
     bool nicknameUnique(std::string nickname);
     void removePlayerFromGame(int clientFd);
+    void sendInfoToNewPlayer(int clientFd);
     void broadcastQuestion();
+    void broadcastAnswerCount(); // how many players answered question
+    void cleanUpBeforeQuestion();
+    std::string prepareTop3message();
+    void broadcastStats();
     void sendNickCorrect(int clientFD, bool correct);
 public:
     GameServer(int num, int time);
