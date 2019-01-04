@@ -3,13 +3,15 @@
 ## Build info:
 
 ### Client:
-  use "make" in "client/build-client_app-Desktop-Debug" direcotry
+  use "make" in "client/build-client_app-Desktop-Debug" directory
   
 ### Server:
   use "make" in server directory
   
 ## TODO
 - Top 3 ranking (now server sends hardcoded, always the same ranking)
+- Solve problem with merging messages
+- Clean fields after questions and disconnecting from game
   
 ## Possible bugs
   

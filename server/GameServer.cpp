@@ -222,7 +222,7 @@ void GameServer::broadcastAnswerCount()
     if(count == players.size())
         timeCounter.stop();
 
-    std::string prefix(" "); //for client, TODO zmień na "25", to jest do wyswietlania w socat
+    std::string prefix("25");
     std::string message = prefix + std::to_string(count);
     for(auto p : players)
     {
@@ -287,7 +287,6 @@ void GameServer::broadcastStats()
         }
 
         //Send top3
-        forThisPlayer = std::string("22") + std::to_string(p->score);
         if(NetworkUtils::sendOnSocket(p->clientFd, messageTop3) == false)
         {
             removePlayerFromGame(p->clientFd);

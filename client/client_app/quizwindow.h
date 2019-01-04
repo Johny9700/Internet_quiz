@@ -49,6 +49,7 @@ private:
     void setTop3(QString);
     bool verifyNick(QString);
     void sendNick(QString);
+    void resetGame();
 };
 
 #endif // QUIZWINDOW_H

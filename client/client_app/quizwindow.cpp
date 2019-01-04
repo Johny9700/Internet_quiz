@@ -38,6 +38,7 @@ void QuizWindow::disconnectedFromServer(){
 void QuizWindow::displayError(QAbstractSocket::SocketError socketError){
     switch (socketError) {
     case QAbstractSocket::RemoteHostClosedError:
+        QMessageBox::warning(this, "Error", "Server was closed.");
         break;
     case QAbstractSocket::HostNotFoundError:
         QMessageBox::warning(this, "Error", "The host was not found.");
@@ -89,6 +90,8 @@ void QuizWindow::read(){
      case 30:
          setTop3(messageFromServer);
          break;
+     default:
+         break;
      }
 
 }
@@ -116,6 +119,7 @@ void QuizWindow::connectionMode(bool mode){
     else{
         ui->connectButton->setText("Connect");
         ui->nickLineEdit->setEnabled(true);
+        resetGame();
     }
 }
 
@@ -167,9 +171,16 @@ bool QuizWindow::verifyNick(QString nick){
 
 void QuizWindow::sendNick(QString qnick){
     QByteArray nick;
-    nick = "10";
-    nick.append(qnick.toUtf8());
+    nick = qnick.toUtf8();
     tcpSocket->write(nick);
+}
+
+void QuizWindow::resetGame(){
+    ui->questionLabel->setText("Questions appear here");
+    ui->APushButton->setText("A");
+    ui->BPushButton->setText("B");
+    ui->CPushButton->setText("C");
+    ui->DPushButton->setText("D");
 }
 
 void QuizWindow::on_connectButton_clicked()
@@ -198,34 +209,34 @@ void QuizWindow::on_connectButton_clicked()
         }
     }
     else{
-        tcpSocket->abort();
+        tcpSocket->close();
     }
 }
 
 void QuizWindow::on_APushButton_clicked()
 {
-    QString answer = "20A";
+    QString answer = "A";
     tcpSocket->write(answer.toUtf8());
     gameMode(false);
 }
 
 void QuizWindow::on_BPushButton_clicked()
 {
-    QString answer = "20B";
+    QString answer = "B";
     tcpSocket->write(answer.toUtf8());
     gameMode(false);
 }
 
 void QuizWindow::on_CPushButton_clicked()
 {
-    QString answer = "20C";
+    QString answer = "C";
     tcpSocket->write(answer.toUtf8());
     gameMode(false);
 }
 
 void QuizWindow::on_DPushButton_clicked()
 {
-    QString answer = "20D";
+    QString answer = "D";
     tcpSocket->write(answer.toUtf8());
     gameMode(false);
 }
@@ -235,7 +246,7 @@ void QuizWindow::on_exitPushButton_clicked()
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Are you sure?", "Quit?", QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes) {
-        tcpSocket->abort();
+        tcpSocket->close();
         this->close();
     }
 }
