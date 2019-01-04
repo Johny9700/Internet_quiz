@@ -251,7 +251,7 @@ std::string GameServer::prepareTop3message()
     //Formatting nick1: score1 nick2: score2 nick3: score3
     //or --: -- if less than 3 players
     //TODO later
-    ss << "30" << "gracz1: " << 28 << " gracz2: " << 14 << " --" << "--"; //only for testing
+    ss << "30" << "gracz1: " << 28 << " gracz2: " << 14 << " --" << " --"; //only for testing
     std::string message = ss.str();
     return message;
 }
