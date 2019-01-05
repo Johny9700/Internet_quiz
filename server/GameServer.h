@@ -28,6 +28,7 @@ private:
     void sendEndOfGameInfo();
     bool nicknameUnique(std::string nickname);
     void removePlayerFromGame(int clientFd);
+    std::string prepareMessageWithQuestionAndChoices();
     void sendInfoToNewPlayer(int clientFd);
     void broadcastQuestion();
     void broadcastAnswerCount(); // how many players answered question

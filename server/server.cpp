@@ -27,6 +27,6 @@ int main(int argc, char ** argv)
     signal(SIGPIPE, SIG_IGN);
 
     //TODO wczytanie parametrów z pliku albo argv
-    GameServer gameServer(5,8);
+    GameServer gameServer(7,30); //num of questions and time per question
     gameServer.run(port);
 }

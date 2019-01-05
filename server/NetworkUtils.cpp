@@ -19,8 +19,9 @@ namespace NetworkUtils
 
     bool sendOnSocket(int sockFd, std::string message)
     {
-        int count = message.length();
-        int res = send(sockFd, message.c_str(), count, MSG_DONTWAIT);
+        std::string messageWithDelimiter = message + std::string("%^&"); ///%^& - end of message
+        int count = messageWithDelimiter.length();
+        int res = send(sockFd, messageWithDelimiter.c_str(), count, MSG_DONTWAIT);
         if(res == count)
             return true;
         else

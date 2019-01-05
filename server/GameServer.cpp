@@ -105,7 +105,7 @@ void GameServer::clientThread(int clientFd)
             }
         }
     }
-    printf("removing clientFd: %i\n", clientFd);
+    printf("removing clientFd: %i thread\n", clientFd);
 }
 
 void GameServer::gameThread()
@@ -114,22 +114,23 @@ void GameServer::gameThread()
     {
         int questionsLeft = numOfQuestionsPerGame;
         //waiting for first player
-        printf("waiting for first player...");
+        printf("waiting for first player...\n");
         while(players.size() < 1)
         {
             sleep(1);
         }
         //start game after 1 minute
-        printf("waiting 60 seconds or longer if only one plater...");
+        printf("waiting 60 seconds or longer if only one plater...\n");
         sleep(10);//TODO set 60, 10 is for testing
         //or wait if there is only one player
         while(players.size() < 2)
         {
             sleep(1);
         }
-        printf("OK, have enough players, starting in 2 seconds...");
+        printf("OK, have enough players, starting in 2 seconds...\n");
         sleep(2); //give player time after choosing nickname
         printf("Rozpoczynamy gre\n");
+        gameIsRunning = true;
         while(questionsLeft > 0)
         {
             cleanUpBeforeQuestion();
@@ -139,12 +140,13 @@ void GameServer::gameThread()
             printf("2 broadcastQuestion\n");
             broadcastQuestion();
             printf("3 startTimer\n");
-            timeCounter.start(timePerQuestion+10);
+            timeCounter.start(timePerQuestion);
             printf("4 end of question, send stats\n");
             broadcastStats();
             printf("<<<<<<waiting 5 seconds>>>>>>\n");
             sleep(5);
         }
+        gameIsRunning = false;
         sendEndOfGameInfo();
     }
 }
@@ -162,7 +164,7 @@ void GameServer::sendEndOfGameInfo()
     sleep(5);
 }
 
-void GameServer::sendInfoToNewPlayer(int clientFd)
+std::string GameServer::prepareMessageWithQuestionAndChoices()
 {
     std::string temp;
     std::stringstream ss;
@@ -171,6 +173,13 @@ void GameServer::sendInfoToNewPlayer(int clientFd)
     for(int i=0; i<4; i++)
         ss << currentQuestion.choices[i] << "`";
     temp = ss.str();
+
+    return temp;
+}
+
+void GameServer::sendInfoToNewPlayer(int clientFd)
+{
+    std::string temp = prepareMessageWithQuestionAndChoices();
 
     if(NetworkUtils::sendOnSocket(clientFd, temp) == false)
     {
@@ -193,12 +202,7 @@ void GameServer::sendInfoToNewPlayer(int clientFd)
 
 void GameServer::broadcastQuestion()
 {
-    std::stringstream ss;
-    //"`" is delimiter to split in client
-    ss << "20" << currentQuestion.question << "`";
-    for(int i=0; i<4; i++)
-        ss << currentQuestion.choices[i] << "`";
-    std::string temp = ss.str();
+    std::string temp = prepareMessageWithQuestionAndChoices();
 
     std::unique_lock<std::mutex> lock(playersVectorLock);
     //TODO send to new players, who joined during answering time
@@ -301,7 +305,7 @@ void GameServer::sendNickCorrect(int clientFD, bool correct)
         message = "10";
     else
         message = "11";
-    send(clientFD, message.c_str(), 2, MSG_DONTWAIT);
+    NetworkUtils::sendOnSocket(clientFD, message);
     return;
 }
 
