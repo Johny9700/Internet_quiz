@@ -31,3 +31,6 @@
 *.x
 *.out
 *.app
+
+# Qt folder
+build-client_app-Desktop-Debug/
