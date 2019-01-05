@@ -3,7 +3,7 @@
 ## Build info:
 
 ### Client:
-  use "make" in "client/build-client_app-Desktop-Debug" directory
+  use "make" in "client/client_app/" directory
   
 ### Server:
   use "make" in server directory
