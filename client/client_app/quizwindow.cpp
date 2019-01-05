@@ -53,47 +53,53 @@ void QuizWindow::displayError(QAbstractSocket::SocketError socketError){
 
 void QuizWindow::read(){
      QString messageFromServer = tcpSocket->readAll();
-     QString typeOfMessage = messageFromServer.left(2);
-     int lengthMessage = messageFromServer.length();
-     messageFromServer = messageFromServer.right(lengthMessage - 2);
+     QStringList  messagesFromServer= messageFromServer.split( "%^&" );
+     int howManyMessages = messagesFromServer.length();
 
-     switch(typeOfMessage.toInt()){
-     case 10:
-         connectionMode(true);
-         break;
-     case 11:
-         connectionMode(false);
-         ui->connectButton->setText("Set new nick");
-         QMessageBox::information(this,"Forbidden nick", "Please change your nick and try again.");
-         break;
-     case 20:
-         setQuestionAndAnswers(messageFromServer);
-         break;
-     case 21:
-         if(messageFromServer == '0'){
-             gameMode(false);
+     for(int i = 0; i < howManyMessages; i++){
+         messageFromServer = messagesFromServer[i];
+         QString typeOfMessage = messageFromServer.left(2);
+         int lengthMessage = messageFromServer.length();
+         messageFromServer = messageFromServer.right(lengthMessage - 2);
+
+         switch(typeOfMessage.toInt()){
+         case 10:
+             connectionMode(true);
+             ui->questionLabel->setText("Waiting for players.");
+             break;
+         case 11:
+             connectionMode(false);
+             ui->connectButton->setText("Set new nick");
+             QMessageBox::information(this,"Forbidden nick", "Please change your nick and try again.");
+             break;
+         case 20:
+             setQuestionAndAnswers(messageFromServer);
+             break;
+         case 21:
+             if(messageFromServer == '0'){
+                 gameMode(false);
+             }
+             ui->timeLabel->setText(messageFromServer);
+             break;
+         case 22:
+             ui->scoreLabel->setText(messageFromServer);
+             break;
+         case 23:
+             ui->questionLabel->setText(messageFromServer);
+             break;
+         case 24:
+             gameFinished(messageFromServer);
+             break;
+         case 25:
+             ui->amountOfAnswersLabel->setText(messageFromServer);
+             break;
+         case 30:
+             setTop3(messageFromServer);
+             break;
+         default:
+             break;
          }
-         ui->timeLabel->setText(messageFromServer);
-         break;
-     case 22:
-         ui->scoreLabel->setText(messageFromServer);
-         break;
-     case 23:
-         ui->questionLabel->setText(messageFromServer);
-         break;
-     case 24:
-         gameFinished(messageFromServer);
-         break;
-     case 25:
-         ui->amountOfAnswersLabel->setText(messageFromServer);
-         break;
-     case 30:
-         setTop3(messageFromServer);
-         break;
-     default:
-         break;
-     }
-
+    }
 }
 
 void QuizWindow::gameMode(bool mode){
@@ -125,6 +131,7 @@ void QuizWindow::connectionMode(bool mode){
 
 void QuizWindow::setQuestionAndAnswers(QString message){
     QStringList questionsAndAnswers = message.split( "`" );
+    ui->amountOfAnswersLabel->setText("0");
     ui->questionLabel->setText(questionsAndAnswers[0]);
     ui->APushButton->setText(questionsAndAnswers[1]);
     ui->BPushButton->setText(questionsAndAnswers[2]);
@@ -138,6 +145,7 @@ void QuizWindow::gameFinished(QString message){
     QMessageBox::StandardButton reply;
     tcpSocket->abort();
     reply = QMessageBox::question(this, "Game finished", message, QMessageBox::Yes|QMessageBox::No);
+    resetGame();
     if (reply == QMessageBox::Yes) {
         QString addr = (QString::fromStdString((conf->getAddr()))).trimmed();
         int portint = std::stoi(conf->getPort());
@@ -181,6 +189,15 @@ void QuizWindow::resetGame(){
     ui->BPushButton->setText("B");
     ui->CPushButton->setText("C");
     ui->DPushButton->setText("D");
+    ui->amountOfAnswersLabel->setText("0");
+    ui->timeLabel->setText("0");
+    ui->scoreLabel->setText("0");
+    ui->firstPlayerLabel->setText("First Player");
+    ui->firstPlayerScoreLabel->setText("0");
+    ui->secondPlayerLabel->setText("Second Player");
+    ui->secondPlayerScoreLabel->setText("0");
+    ui->thirdPlayerLabel->setText("Third Player");
+    ui->thirdPlayerScoreLabel->setText("0");
 }
 
 void QuizWindow::on_connectButton_clicked()
@@ -191,13 +208,7 @@ void QuizWindow::on_connectButton_clicked()
         quint16 port = quint16(portint);
         QString nick;
         nick = ui->nickLineEdit->text();
-        if(nick == ""){
-            QMessageBox::information(this, "Warning", "Your nick has to be longer.");
-        }
-        else if(nick.contains(" ")){
-           QMessageBox::information(this, "Warning", "Your nick can't contain whitespace.");
-        }
-        else{
+        if(verifyNick(nick) == true){
             tcpSocket->connectToHost(addr,port);
         }
     }
