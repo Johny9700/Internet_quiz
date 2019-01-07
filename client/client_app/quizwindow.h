@@ -42,6 +42,7 @@ private:
     Ui::QuizWindow *ui;
     QTcpSocket *tcpSocket;
     configure *conf;
+    QString messageBuffer;
     void gameMode(bool);
     void connectionMode(bool);
     void setQuestionAndAnswers(QString);

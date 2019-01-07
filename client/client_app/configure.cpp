@@ -13,8 +13,8 @@ void configure::setConfiguration(){
         configfile.close();
     }
     else{
-        addr = "123";
-        port = "888000";
+        addr = "127.0.0.1";
+        port = "8000";
     }
 }
 
