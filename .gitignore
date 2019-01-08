@@ -32,5 +32,6 @@
 *.out
 *.app
 
-# Qt folder
+# Qt folders and files
 build-client_app-Desktop-Debug/
+*.pro.user

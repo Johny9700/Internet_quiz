@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QtNetwork/QTcpSocket>
 #include "configure.h"
+#include "clienttimer.h"
 
 namespace Ui {
 class QuizWindow;
@@ -38,11 +39,14 @@ private slots:
 
     void disconnectedFromServer();
 
+    void setNewTime();
+
 private:
     Ui::QuizWindow *ui;
     QTcpSocket *tcpSocket;
     configure *conf;
     QString messageBuffer;
+    clientTimer *cTimer;
     void gameMode(bool);
     void connectionMode(bool);
     void setQuestionAndAnswers(QString);

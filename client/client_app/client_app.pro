@@ -26,11 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         quizwindow.cpp \
-    configure.cpp
+    configure.cpp \
+    clienttimer.cpp
 
 HEADERS += \
         quizwindow.h \
-    configure.h
+    configure.h \
+    clienttimer.h
 
 FORMS += \
         quizwindow.ui

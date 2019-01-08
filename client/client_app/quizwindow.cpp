@@ -14,11 +14,14 @@ QuizWindow::QuizWindow(QWidget *parent) :
     ui->setupUi(this);
     conf = new configure();
     tcpSocket = new QTcpSocket(this);
+    cTimer = new clientTimer();
 
     connect(tcpSocket, SIGNAL(connected()), this, SLOT(connectedToServer()));
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(read()));
     connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(displayError(QAbstractSocket::SocketError)));
     connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnectedFromServer()));
+    connect(cTimer, SIGNAL(changeTime()), this, SLOT(setNewTime()));
+
 }
 
 QuizWindow::~QuizWindow()
@@ -84,16 +87,20 @@ void QuizWindow::read(){
                  if(messageFromServer == '0'){
                      gameMode(false);
                  }
-                 ui->timeLabel->setText(messageFromServer);
+                 else{
+                    cTimer->setTime(messageFromServer.toInt());
+                 }
                  break;
              case 22:
                  ui->scoreLabel->setText(messageFromServer);
                  break;
              case 23:
                  ui->questionLabel->setText(messageFromServer);
+                 cTimer->stopTime();
                  break;
              case 24:
                  gameFinished(messageFromServer);
+                 cTimer->stopTime();
                  break;
              case 25:
                  ui->amountOfAnswersLabel->setText(messageFromServer);
@@ -205,6 +212,13 @@ void QuizWindow::resetGame(){
     ui->secondPlayerScoreLabel->setText("0");
     ui->thirdPlayerLabel->setText("Third Player");
     ui->thirdPlayerScoreLabel->setText("0");
+}
+
+void QuizWindow::setNewTime(){
+    ui->timeLabel->setText(QString::number(cTimer->getTime()));
+    if(cTimer->getTime() == 0){
+        gameMode(false);
+    }
 }
 
 void QuizWindow::on_connectButton_clicked()
