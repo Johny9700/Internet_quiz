@@ -36,6 +36,9 @@ void QuizWindow::connectedToServer(){
 void QuizWindow::disconnectedFromServer(){
     gameMode(false);
     connectionMode(false);
+    cTimer->stopTime();
+    ui->timeLabel->setText("0");
+
 }
 
 void QuizWindow::displayError(QAbstractSocket::SocketError socketError){
