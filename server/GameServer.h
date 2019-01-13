@@ -4,6 +4,8 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
+#include <atomic>
 #include "Question.h"
 #include "QuestionDatabase.h"
 #include "Player.h"
@@ -18,10 +20,12 @@ private:
     int timePerQuestion;
     std::vector<Player*> players;
     std::mutex playersVectorLock;
+    std::condition_variable cv;
     QuestionDatabase questionDatabase;
     Question currentQuestion;
     int currentQuestionStats[4];
-    bool gameIsRunning;
+    std::atomic<bool> gameIsRunning;
+    std::atomic<bool> timeForAnswering;
     TimeCounter timeCounter;
     void clientThread(int clientFd);
     void gameThread();
@@ -30,12 +34,15 @@ private:
     void removePlayerFromGame(int clientFd);
     std::string prepareMessageWithQuestionAndChoices();
     void sendInfoToNewPlayer(int clientFd);
+    void broadcastMessage(std::string const& message);
     void broadcastQuestion();
-    void broadcastAnswerCount(); // how many players answered question
+    std::string countAnswers();// how many players answered question
+    void broadcastAnswerCount(); 
+    void resetPlayersScores();
     void cleanUpBeforeQuestion();
     std::string prepareTop3message();
     void broadcastStats();
-    void sendNickCorrect(int clientFD, bool correct);
+    bool sendNickCorrect(int clientFD, bool correct);
 public:
     GameServer(int num, int time);
     ~GameServer();

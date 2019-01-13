@@ -10,16 +10,15 @@
 class TimeCounter
 {
 private:
-    std::vector<Player*>& players;
     bool gameRunning;
     int seconds;
-    void sendTimeToPlayers();
 public:
-    TimeCounter(std::vector<Player*>& players);
+    TimeCounter();
     ~TimeCounter();
-    void start(int seconds);
+    void start();
     void stop();
     int getTimeLeft();
+    void setTime(int seconds);
 };
 
 #endif // TIMECOUNTER_H
