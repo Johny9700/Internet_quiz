@@ -10,11 +10,12 @@
 #include <sstream>
 
 
-GameServer::GameServer(int num, int time) : questionDatabase("questions.txt"), timeCounter(players)
+GameServer::GameServer(int num, int time) : questionDatabase("questions.txt"), timeCounter()
 {
     numOfQuestionsPerGame = num;
     timePerQuestion = time;
     gameIsRunning = false;
+    timeForAnswering = false;
 }
 
 GameServer::~GameServer()
@@ -52,7 +53,11 @@ void GameServer::clientThread(int clientFd)
         {
             if(nicknameUnique(message))
             {
-                sendNickCorrect(clientFd, true);
+                if(sendNickCorrect(clientFd, true) == false)
+                {
+                    end = true;
+                    break;
+                }
                 player = new Player();
                 player->clientFd = clientFd;
                 player->name = message;
@@ -61,6 +66,7 @@ void GameServer::clientThread(int clientFd)
                 player->currentPoints = 0;
                 std::unique_lock<std::mutex> lock(playersVectorLock);
                 players.push_back(player);
+                cv.notify_one();
                 if(gameIsRunning)
                 {
                     sendInfoToNewPlayer(clientFd);
@@ -69,7 +75,10 @@ void GameServer::clientThread(int clientFd)
             }
             else
             {
-                sendNickCorrect(clientFd, false);
+                if(sendNickCorrect(clientFd, false) == false)
+                {
+                    end = true;
+                }
             }
         }
     }
@@ -90,7 +99,7 @@ void GameServer::clientThread(int clientFd)
         {
             int currentQuestionScore = timeCounter.getTimeLeft();
             printf("dostalem odpowiedz %s\n", answer.c_str());
-            if(currentQuestionScore > 0)
+            if(timeForAnswering == true)
             {
                 std::unique_lock<std::mutex> lock(playersVectorLock);
                 if(player->answeared == false && answer[0] == currentQuestion.correct[0])
@@ -103,6 +112,10 @@ void GameServer::clientThread(int clientFd)
                 currentQuestionStats[(int)(answer[0]-'A')] += 1;
                 broadcastAnswerCount();
             }
+            else
+            {
+                printf("ale to nie czas na odpowidź wiec ignoruje\n");
+            }
         }
     }
     printf("removing clientFd: %i thread\n", clientFd);
@@ -113,23 +126,26 @@ void GameServer::gameThread()
     while(true)
     {
         int questionsLeft = numOfQuestionsPerGame;
-        //waiting for first player
+
         printf("waiting for first player...\n");
-        while(players.size() < 1)
-        {
-            sleep(1);
-        }
+        std::unique_lock<std::mutex> lock(playersVectorLock);
+        cv.wait(lock, [this]{return players.size()>0;});
+        lock.unlock();
+        
         //start game after 1 minute
-        printf("waiting 60 seconds or longer if only one plater...\n");
-        sleep(10);//TODO set 60, 10 is for testing
+        printf("waiting 60 seconds or longer if only one player...\n");
+        sleep(30);//TODO set 60, 30 is for testing
+
         //or wait if there is only one player
-        while(players.size() < 2)
-        {
-            sleep(1);
-        }
-        printf("OK, have enough players, starting in 2 seconds...\n");
-        sleep(2); //give player time after choosing nickname
-        printf("Rozpoczynamy gre\n");
+        lock.lock();
+        cv.wait(lock, [this]{return players.size()>1;});
+        printf("OK, have enough players\n");
+        resetPlayersScores();
+        lock.unlock();
+
+        printf("Starting game in 2 seconds...\n");
+        sleep(2); //give last player time after choosing nickname
+        timeCounter.setTime(timePerQuestion);
         gameIsRunning = true;
         while(questionsLeft > 0)
         {
@@ -137,10 +153,13 @@ void GameServer::gameThread()
             printf("1 getNextQuestion\n");
             currentQuestion = questionDatabase.getNextQuestion();
             questionsLeft -= 1;
+            timeCounter.setTime(timePerQuestion);
             printf("2 broadcastQuestion\n");
             broadcastQuestion();
             printf("3 startTimer\n");
-            timeCounter.start(timePerQuestion);
+            timeForAnswering = true;
+            timeCounter.start();
+            timeForAnswering = false;
             printf("4 end of question, send stats\n");
             broadcastStats();
             printf("<<<<<<waiting 5 seconds>>>>>>\n");
@@ -153,15 +172,9 @@ void GameServer::gameThread()
 
 void GameServer::sendEndOfGameInfo()
 {
+    std::string message("24");
     std::unique_lock<std::mutex> lock(playersVectorLock);
-    for(auto p : players)
-    {
-        if(NetworkUtils::sendOnSocket(p->clientFd, std::string("24")) == false)
-        {
-            removePlayerFromGame(p->clientFd);
-        }
-    }
-    sleep(5);
+    broadcastMessage(message);
 }
 
 std::string GameServer::prepareMessageWithQuestionAndChoices()
@@ -177,7 +190,7 @@ std::string GameServer::prepareMessageWithQuestionAndChoices()
     return temp;
 }
 
-void GameServer::sendInfoToNewPlayer(int clientFd)
+void GameServer::sendInfoToNewPlayer(int clientFd) // mutex locked when this method is called
 {
     std::string temp = prepareMessageWithQuestionAndChoices();
 
@@ -186,36 +199,48 @@ void GameServer::sendInfoToNewPlayer(int clientFd)
         removePlayerFromGame(clientFd);
     }
 
-    temp = std::to_string(timeCounter.getTimeLeft());
+
+    temp = std::string("21") + std::to_string(timeCounter.getTimeLeft());
     if(NetworkUtils::sendOnSocket(clientFd, temp) == false)
     {
         removePlayerFromGame(clientFd);
     }
 
-    broadcastAnswerCount();
+    std::string prefix("25");
+    temp = prefix + countAnswers();
+    if(NetworkUtils::sendOnSocket(clientFd, temp) == false)
+    {
+        removePlayerFromGame(clientFd);
+    }
 
     //TODO wyslij też ile graczy odpowiedzialo na to pytanie
     // oraz Top3 graczy
-
-
 }
 
-void GameServer::broadcastQuestion()
+void GameServer::broadcastMessage(std::string const& message)
 {
-    std::string temp = prepareMessageWithQuestionAndChoices();
-
-    std::unique_lock<std::mutex> lock(playersVectorLock);
-    //TODO send to new players, who joined during answering time
     for(auto p : players)
     {
-        if(NetworkUtils::sendOnSocket(p->clientFd, temp) == false)
+        if(NetworkUtils::sendOnSocket(p->clientFd, message) == false)
         {
             removePlayerFromGame(p->clientFd);
         }
     }
 }
 
-void GameServer::broadcastAnswerCount()
+void GameServer::broadcastQuestion()
+{
+    std::string temp = prepareMessageWithQuestionAndChoices();
+    int time = timeCounter.getTimeLeft();
+    std::string prefix("21"); //prefix for client app
+    std::string timeMessage = prefix + std::to_string(time);
+
+    std::unique_lock<std::mutex> lock(playersVectorLock);
+    broadcastMessage(temp);
+    broadcastMessage(timeMessage);
+}
+
+std::string GameServer::countAnswers()
 {
     unsigned int count = 0;
     for(auto p : players)
@@ -224,16 +249,25 @@ void GameServer::broadcastAnswerCount()
             count += 1;
     }
     if(count == players.size())
+    {
         timeCounter.stop();
+        timeForAnswering = false;
+    }
+    return std::to_string(count);
+}
 
+void GameServer::broadcastAnswerCount()
+{
     std::string prefix("25");
-    std::string message = prefix + std::to_string(count);
+    std::string message = prefix + countAnswers();
+    broadcastMessage(message);
+}
+
+void GameServer::resetPlayersScores()
+{
     for(auto p : players)
     {
-        if(NetworkUtils::sendOnSocket(p->clientFd, message) == false)
-        {
-            removePlayerFromGame(p->clientFd);
-        }
+        p->score = 0;
     }
 }
 
@@ -298,20 +332,23 @@ void GameServer::broadcastStats()
     }
 }
 
-void GameServer::sendNickCorrect(int clientFD, bool correct)
+bool GameServer::sendNickCorrect(int clientFD, bool correct)
 {
     std::string message;
     if(correct)
         message = "10";
     else
         message = "11";
-    NetworkUtils::sendOnSocket(clientFD, message);
-    return;
+    if(NetworkUtils::sendOnSocket(clientFD, message) == false)
+    {
+        return false;
+    }
+     return true;   
 }
 
 bool GameServer::nicknameUnique(std::string nickname)
 {
-    printf("checking if name is unique: %s\n", nickname.c_str());
+    printf("checking if name is unique: '%s'\n", nickname.c_str());
     std::unique_lock<std::mutex> lock(playersVectorLock);
     for(auto p : players)
     {

@@ -1,6 +1,11 @@
 #include "TimeCounter.h"
+#include <iostream>
 
-TimeCounter::TimeCounter(std::vector<Player*>& players) : players(players) {}
+TimeCounter::TimeCounter()
+{
+    seconds = 0;
+    gameRunning = false;
+}
 
 TimeCounter::~TimeCounter()
 {
@@ -8,22 +13,24 @@ TimeCounter::~TimeCounter()
     gameRunning = false;
 }
 
-void TimeCounter::start(int seconds)
+void TimeCounter::start()
 {
-    this->seconds = seconds;
     gameRunning = true;
-    
-    sendTimeToPlayers();
-    std::chrono::system_clock systemClock;
-    std::chrono::system_clock::time_point lastRun = systemClock.now();
+    const auto oneSecond = std::chrono::milliseconds(1000);
+
     while(gameRunning && this->seconds > 0)
     {
-        if (systemClock.now() - lastRun >= std::chrono::seconds(1))
+        auto start = std::chrono::steady_clock::now();
+        this->seconds -= 1;
+        std::cout << "sekundnik " << seconds << std::endl;
+        auto end = std::chrono::steady_clock::now();
+        auto elapsed = end - start;
+
+        auto sleepTime = oneSecond - elapsed;
+        if(sleepTime > std::chrono::milliseconds::zero())
         {
-            lastRun += std::chrono::seconds(1);
-            this->seconds -= 1;
-            sendTimeToPlayers();
-        }
+            std::this_thread::sleep_for(sleepTime);
+        } 
     }
     gameRunning = false;
     return;
@@ -35,17 +42,12 @@ void TimeCounter::stop()
     printf("TimeCounter stop called\n");//WYWAL TO
 }
 
-void TimeCounter::sendTimeToPlayers()
-{
-    std::string prefix("21"); //prefiz for client app
-    std::string message = prefix + std::to_string(seconds);
-    for(auto p : players)
-    { 
-        NetworkUtils::sendOnSocket(p->clientFd, message);
-    }
-}
-
 int TimeCounter::getTimeLeft()
 {
     return seconds;
+}
+
+void TimeCounter::setTime(int seconds)
+{
+    this->seconds = seconds;
 }

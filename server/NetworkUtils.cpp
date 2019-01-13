@@ -17,7 +17,7 @@ namespace NetworkUtils
         if(res) error(1,errno, "setsockopt failed");
     }
 
-    bool sendOnSocket(int sockFd, std::string message)
+    bool sendOnSocket(int sockFd, std::string const& message)
     {
         std::string messageWithDelimiter = message + std::string("%^&"); ///%^& - end of message
         int count = messageWithDelimiter.length();
@@ -25,16 +25,23 @@ namespace NetworkUtils
         if(res == count)
             return true;
         else
+        {
+            printf("Wysylanie nie powiodlo sie\n");
             return false;
+        }
+            
     }
     
     bool readFromSocket(int sockFd, std::string &message)
     {
         char buffer[255];
+        printf("NetworkUtlils reading...\n");
         int count = read(sockFd, buffer, 255);
+        printf("NetworkUtils get some message\n");
         if(count < 1)
         {
             message = "";
+            printf("NetworkUtils read return false\n");
             return false;
         }
             
