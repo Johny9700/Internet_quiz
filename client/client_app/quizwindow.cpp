@@ -196,6 +196,7 @@ bool QuizWindow::verifyNick(QString nick){
 
 void QuizWindow::sendNick(QString qnick){
     QByteArray nick;
+    qnick = qnick + "%^&";
     nick = qnick.toUtf8();
     tcpSocket->write(nick);
 }
@@ -250,28 +251,28 @@ void QuizWindow::on_connectButton_clicked()
 
 void QuizWindow::on_APushButton_clicked()
 {
-    QString answer = "A";
+    QString answer = "A%^&";
     tcpSocket->write(answer.toUtf8());
     gameMode(false);
 }
 
 void QuizWindow::on_BPushButton_clicked()
 {
-    QString answer = "B";
+    QString answer = "B%^&";
     tcpSocket->write(answer.toUtf8());
     gameMode(false);
 }
 
 void QuizWindow::on_CPushButton_clicked()
 {
-    QString answer = "C";
+    QString answer = "C%^&";
     tcpSocket->write(answer.toUtf8());
     gameMode(false);
 }
 
 void QuizWindow::on_DPushButton_clicked()
 {
-    QString answer = "D";
+    QString answer = "D%^&";
     tcpSocket->write(answer.toUtf8());
     gameMode(false);
 }
