@@ -1,6 +1,6 @@
 # Declaration of variables
-CC = g++
-CC_FLAGS = --std=c++17 -Wall -O0 -g -pthread
+CXX = g++
+CPP_FLAGS = --std=c++17 -Wall -O0 -g -pthread
  
 # File names
 EXEC = server.x
@@ -9,11 +9,11 @@ OBJECTS = $(SOURCES:.cpp=.o)
  
 # Main target
 $(EXEC): $(OBJECTS)
-	$(CC) -pthread $(OBJECTS) -o $(EXEC)
+	$(CXX) -pthread $(OBJECTS) -o $(EXEC)
  
 # To obtain object files
 %.o: %.cpp
-	$(CC) -c $(CC_FLAGS) $< -o $@
+	$(CXX) -c $(CPP_FLAGS) $< -o $@
  
 # To remove generated files
 clean:
