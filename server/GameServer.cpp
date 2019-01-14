@@ -8,6 +8,7 @@
 // #include <error.h>
 // #include <netdb.h>
 #include <sstream>
+#include <algorithm>
 
 
 GameServer::GameServer(int num, int time) : questionDatabase("questions.txt"), timeCounter()
@@ -87,7 +88,10 @@ void GameServer::clientThread(int clientFd)
     while(!end)
     {
         if(player == nullptr)
+        {
             printf("NULL PLAYER!!!!");
+            break;
+        }
         std::string answer;
         if(NetworkUtils::readFromSocket(clientFd, answer) == false)
         {
@@ -286,10 +290,37 @@ void GameServer::cleanUpBeforeQuestion()
 std::string GameServer::prepareTop3message()
 {
     std::stringstream ss;
+    ss << "30";
+    int numOfPlayers = players.size();
+
+    if(numOfPlayers < 1)
+    {
+        ss << " --" << " --" << " --" << " --" << " --" << " --";
+    }
+    else if(numOfPlayers < 2)
+    {
+        ss << players[0]->name << ": " << players[0]->score << " --" << " --" << " --" << " --";
+    }
+    else
+    {
+        std::sort(players.begin(), players.end(), [](Player *a, Player *b) {return a->score > b->score; });
+        if(numOfPlayers < 3)
+        {
+            ss << players[0]->name << ": " << players[0]->score << " ";
+            ss << players[1]->name << ": " << players[1]->score << " ";
+            ss << "--" << " --";
+        }
+        else
+        {
+            ss << players[0]->name << ": " << players[0]->score << " ";
+            ss << players[1]->name << ": " << players[1]->score << " ";
+            ss << players[2]->name << ": " << players[2]->score;
+        }
+    }
     //Formatting nick1: score1 nick2: score2 nick3: score3
     //or --: -- if less than 3 players
     //TODO later
-    ss << "30" << "gracz1: " << 28 << " gracz2: " << 14 << " --" << " --"; //only for testing
+    // ss << "30" << "gracz1: " << 28 << " gracz2: " << 14 << " --" << " --"; //only for testing
     std::string message = ss.str();
     return message;
 }
