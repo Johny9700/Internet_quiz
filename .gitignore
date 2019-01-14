@@ -34,4 +34,4 @@
 
 # Qt folders and files
 build-client_app-Desktop-Debug/
-*.pro
+*.pro.user
