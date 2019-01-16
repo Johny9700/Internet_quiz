@@ -10,6 +10,7 @@ struct Player
     int score;
     bool answeared;
     int currentPoints;
+    bool deadSocket;
 };
 
 #endif // PLAYER_H

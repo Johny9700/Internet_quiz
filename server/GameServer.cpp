@@ -24,9 +24,8 @@ GameServer::~GameServer()
     std::unique_lock<std::mutex> lock(playersVectorLock);
     for(auto p : players)
     {
-        NetworkUtils::sendOnSocket(p->clientFd, std::string("99Sorry,\nServer has been turned off"));
-        shutdown(p->clientFd, SHUT_RDWR);
-        close(p->clientFd);
+        NetworkUtils::sendOnSocket(!p->deadSocket && p->clientFd, std::string("99Sorry,\nServer has been turned off"));
+        shutdownAndClose(p->clientFd);
         delete p;
     }
     players.clear();
@@ -56,6 +55,7 @@ void GameServer::clientThread(int clientFd)
             {
                 if(sendNickCorrect(clientFd, true) == false)
                 {
+                    shutdownAndClose(clientFd);
                     end = true;
                     break;
                 }
@@ -65,12 +65,13 @@ void GameServer::clientThread(int clientFd)
                 player->score = 0;
                 player->answeared = false;
                 player->currentPoints = 0;
+                player->deadSocket = false;
                 std::unique_lock<std::mutex> lock(playersVectorLock);
                 players.push_back(player);
                 cv.notify_one();
-                if(gameIsRunning)
+                if(gameIsRunning && timeForAnswering)
                 {
-                    sendInfoToNewPlayer(clientFd);
+                    sendInfoToNewPlayer(player);
                 }
                 break;
             }
@@ -78,6 +79,7 @@ void GameServer::clientThread(int clientFd)
             {
                 if(sendNickCorrect(clientFd, false) == false)
                 {
+                    shutdownAndClose(clientFd);
                     end = true;
                 }
             }
@@ -194,40 +196,45 @@ std::string GameServer::prepareMessageWithQuestionAndChoices()
     return temp;
 }
 
-void GameServer::sendInfoToNewPlayer(int clientFd) // mutex locked when this method is called
-{
+void GameServer::sendInfoToNewPlayer(Player* player) // mutex locked when this method is called
+{  
     std::string temp = prepareMessageWithQuestionAndChoices();
+    int clientFd = player->clientFd;
 
-    if(NetworkUtils::sendOnSocket(clientFd, temp) == false)
+    if(!player->deadSocket && NetworkUtils::sendOnSocket(clientFd, temp) == false)
     {
-        removePlayerFromGame(clientFd);
+        shutdownAndClose(clientFd);
+        player->deadSocket = true;
+        return;
     }
 
 
     temp = std::string("21") + std::to_string(timeCounter.getTimeLeft());
-    if(NetworkUtils::sendOnSocket(clientFd, temp) == false)
+    if(!player->deadSocket && NetworkUtils::sendOnSocket(clientFd, temp) == false)
     {
-        removePlayerFromGame(clientFd);
+        shutdownAndClose(clientFd);
+        player->deadSocket = true;
+        return;
     }
 
     std::string prefix("25");
     temp = prefix + countAnswers();
-    if(NetworkUtils::sendOnSocket(clientFd, temp) == false)
+    if(!player->deadSocket && NetworkUtils::sendOnSocket(clientFd, temp) == false)
     {
-        removePlayerFromGame(clientFd);
+        shutdownAndClose(clientFd);
+        player->deadSocket = true;
+        return;
     }
-
-    //TODO wyslij też ile graczy odpowiedzialo na to pytanie
-    // oraz Top3 graczy
 }
 
 void GameServer::broadcastMessage(std::string const& message)
 {
     for(auto p : players)
     {
-        if(NetworkUtils::sendOnSocket(p->clientFd, message) == false)
+        if(!p->deadSocket && NetworkUtils::sendOnSocket(p->clientFd, message) == false)
         {
-            removePlayerFromGame(p->clientFd);
+            shutdownAndClose(p->clientFd);
+            p->deadSocket = true;
         }
     }
 }
@@ -343,22 +350,25 @@ void GameServer::broadcastStats()
         forThisPlayer += std::string("You get ");
         forThisPlayer += std::to_string(p->currentPoints);
         forThisPlayer += std::string(" for this question");
-        if(NetworkUtils::sendOnSocket(p->clientFd, forThisPlayer) == false)
+        if(!p->deadSocket && NetworkUtils::sendOnSocket(p->clientFd, forThisPlayer) == false)
         {
-            removePlayerFromGame(p->clientFd);
+            shutdownAndClose(p->clientFd);
+            p->deadSocket = true;
         }
         
         //Send total score
         forThisPlayer = std::string("22") + std::to_string(p->score);
-        if(NetworkUtils::sendOnSocket(p->clientFd, forThisPlayer) == false)
+        if(!p->deadSocket && NetworkUtils::sendOnSocket(p->clientFd, forThisPlayer) == false)
         {
-            removePlayerFromGame(p->clientFd);
+            shutdownAndClose(p->clientFd);
+            p->deadSocket = true;
         }
 
         //Send top3
-        if(NetworkUtils::sendOnSocket(p->clientFd, messageTop3) == false)
+        if(!p->deadSocket && NetworkUtils::sendOnSocket(p->clientFd, messageTop3) == false)
         {
-            removePlayerFromGame(p->clientFd);
+            shutdownAndClose(p->clientFd);
+            p->deadSocket = true;
         }
     }
 }
@@ -393,6 +403,12 @@ bool GameServer::nicknameUnique(std::string nickname)
     return true;
 }
 
+void GameServer::shutdownAndClose(int clientFd)
+{
+    shutdown(clientFd, SHUT_RDWR);
+    close(clientFd);
+}
+
 void GameServer::removePlayerFromGame(int clientFd)
 {
     for (unsigned int i = 0; i<players.size(); i++)
@@ -400,8 +416,10 @@ void GameServer::removePlayerFromGame(int clientFd)
         if(players[i]->clientFd == clientFd)
         {
             printf("Removing player clientFd %d, name: %s\n", players[i]->clientFd, players[i]->name.c_str());
-            shutdown(players[i]->clientFd, SHUT_RDWR);
-            close(players[i]->clientFd);
+            if(!players[i]->deadSocket)
+            {
+                shutdownAndClose(clientFd);
+            }
             delete players[i];
             players[i] = nullptr;
             players.erase(players.begin() + i);

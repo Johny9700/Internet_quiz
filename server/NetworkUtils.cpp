@@ -35,25 +35,31 @@ namespace NetworkUtils
     bool readFromSocket(int sockFd, std::string &message)
     {
         char buffer[255];
+        std::string temp("");
         printf("NetworkUtlils reading...\n");
-        int count = read(sockFd, buffer, 255);
-        printf("NetworkUtils get some message\n");
-        if(count < 1)
+        do
         {
-            message = "";
-            printf("NetworkUtils read return false\n");
-            return false;
-        }
+            int count = read(sockFd, buffer, 255);
+            printf("NetworkUtils get some message\n");
+            if(count < 1)
+            {
+                message = "";
+                printf("NetworkUtils read return false\n");
+                return false;
+            }
             
-        std::string temp(buffer);
-        temp = temp.substr(0, count);
+            std::string receivedData(buffer);
+            receivedData = receivedData.substr(0, count);
+            temp += receivedData;
+        } while(temp.substr(temp.size()-3) != std::string("%^&"));
+        
 
         if(!temp.empty() && temp[temp.length()-1] == '\n')
         {
             //get rid of endline, useful when testing with socat
             temp.erase(temp.length()-1);
         }
-        message = temp;
+        message = temp.substr(0, temp.size()-3);
         return true;
     }
 }

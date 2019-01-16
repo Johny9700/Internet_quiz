@@ -1,5 +1,4 @@
 #include "TimeCounter.h"
-#include <iostream>
 
 TimeCounter::TimeCounter()
 {
@@ -22,7 +21,6 @@ void TimeCounter::start()
     {
         auto start = std::chrono::steady_clock::now();
         this->seconds -= 1;
-        std::cout << "sekundnik " << seconds << std::endl;
         auto end = std::chrono::steady_clock::now();
         auto elapsed = end - start;
 

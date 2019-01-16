@@ -31,9 +31,10 @@ private:
     void gameThread();
     void sendEndOfGameInfo();
     bool nicknameUnique(std::string nickname);
+    void shutdownAndClose(int clientFd);
     void removePlayerFromGame(int clientFd);
     std::string prepareMessageWithQuestionAndChoices();
-    void sendInfoToNewPlayer(int clientFd);
+    void sendInfoToNewPlayer(Player* player);
     void broadcastMessage(std::string const& message);
     void broadcastQuestion();
     std::string countAnswers();// how many players answered question
