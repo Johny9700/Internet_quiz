@@ -23,6 +23,8 @@ void clientTimer::startTime(){
 
 void clientTimer::stopTime(){
     timer->stop();
+    time = 0;
+    emit changeTime();
 }
 
 void clientTimer::modifyTime(){
