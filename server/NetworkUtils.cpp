@@ -2,11 +2,11 @@
 
 namespace NetworkUtils
 {
-    uint16_t readPort(char * txt)
+    uint16_t readPort(std::string txt)
     {
         char * ptr;
-        auto port = strtol(txt, &ptr, 10);
-        if(*ptr!=0 || port<1 || (port>((1<<16)-1))) error(1,0,"illegal argument %s", txt);
+        auto port = strtol(txt.c_str(), &ptr, 10);
+        if(*ptr!=0 || port<1 || (port>((1<<16)-1))) error(1,0,"illegal argument %s", txt.c_str());
         return port;
     }
 

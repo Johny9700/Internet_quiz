@@ -11,10 +11,8 @@
 #include <algorithm>
 
 
-GameServer::GameServer(int num, int time) : questionDatabase("questions.txt"), timeCounter()
+GameServer::GameServer(const char* configPath, const char* questionsFilePath): questionDatabase(questionsFilePath), configuration(configPath), timeCounter()
 {
-    numOfQuestionsPerGame = num;
-    timePerQuestion = time;
     gameIsRunning = false;
     timeForAnswering = false;
 }
@@ -129,9 +127,10 @@ void GameServer::clientThread(int clientFd)
 
 void GameServer::gameThread()
 {
+    sleep(configuration.getTimeBeforeFirstGame());
     while(true)
     {
-        int questionsLeft = numOfQuestionsPerGame;
+        int questionsLeft = configuration.getNumOfQuestionsPerGame();
 
         printf("waiting for first player...\n");
         std::unique_lock<std::mutex> lock(playersVectorLock);
@@ -140,7 +139,7 @@ void GameServer::gameThread()
         
         //start game after 1 minute
         printf("waiting 60 seconds or longer if only one player...\n");
-        sleep(30);//TODO set 60, 30 is for testing
+        sleep(configuration.getTimeBetweenEachGame());
 
         //or wait if there is only one player
         lock.lock();
@@ -151,7 +150,7 @@ void GameServer::gameThread()
 
         printf("Starting game in 2 seconds...\n");
         sleep(2); //give last player time after choosing nickname
-        timeCounter.setTime(timePerQuestion);
+        timeCounter.setTime(configuration.getTimePerQuestion());
         gameIsRunning = true;
         while(questionsLeft > 0)
         {
@@ -159,7 +158,7 @@ void GameServer::gameThread()
             printf("1 getNextQuestion\n");
             currentQuestion = questionDatabase.getNextQuestion();
             questionsLeft -= 1;
-            timeCounter.setTime(timePerQuestion);
+            timeCounter.setTime(configuration.getTimePerQuestion());
             printf("2 broadcastQuestion\n");
             broadcastQuestion();
             printf("3 startTimer\n");
@@ -428,9 +427,11 @@ void GameServer::removePlayerFromGame(int clientFd)
     }
 }
 
-void GameServer::run(uint16_t port)
+void GameServer::run()
 {
     printf("server started\n");
+    // read port
+    auto port = NetworkUtils::readPort(configuration.getPort());
     // create socket
     servFd = socket(AF_INET, SOCK_STREAM, 0);
     if(servFd == -1) error(1, errno, "socket failed");

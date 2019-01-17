@@ -13,7 +13,7 @@
 namespace NetworkUtils
 {
     // converts cstring to port
-    uint16_t readPort(char * txt);
+    uint16_t readPort(std::string txt);
     // sets SO_REUSEADDR
     void setReuseAddr(int sock);
     // sends message on socket and returns 0 for success, -1 for failure
