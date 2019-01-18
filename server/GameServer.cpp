@@ -98,6 +98,7 @@ void GameServer::clientThread(int clientFd)
             printf("removing %d\n", clientFd);
             std::unique_lock<std::mutex> lock(playersVectorLock);
             removePlayerFromGame(clientFd);
+            countAnswers();
             end = true;
         } else
         {
@@ -137,8 +138,6 @@ void GameServer::gameThread()
         cv.wait(lock, [this]{return players.size()>0;});
         lock.unlock();
         
-        //start game after 1 minute
-        printf("waiting 60 seconds or longer if only one player...\n");
         sleep(configuration.getTimeBetweenEachGame());
 
         //or wait if there is only one player
@@ -325,8 +324,6 @@ std::string GameServer::prepareTop3message()
     }
     //Formatting nick1: score1 nick2: score2 nick3: score3
     //or --: -- if less than 3 players
-    //TODO later
-    // ss << "30" << "gracz1: " << 28 << " gracz2: " << 14 << " --" << " --"; //only for testing
     std::string message = ss.str();
     return message;
 }
@@ -337,7 +334,7 @@ void GameServer::broadcastStats()
     std::stringstream ss;
     ss << "23";
     for(int i=0; i<4; i++)
-        ss << (char)('A'+i) << ": " << currentQuestionStats[i] << std::endl;
+        ss << (char)('A'+i) << ": " << currentQuestionStats[i] << "        ";
     std::string forAllPlayers = ss.str();
 
     std::unique_lock<std::mutex> lock(playersVectorLock);
@@ -346,9 +343,12 @@ void GameServer::broadcastStats()
     {
         //Send Answer stats and points for this question
         std::string forThisPlayer = forAllPlayers;
-        forThisPlayer += std::string("You get ");
+        forThisPlayer += std::string("\nCorrect answer was: ");
+        forThisPlayer += currentQuestion.correct;
+        forThisPlayer += std::string("\nYou got ");
         forThisPlayer += std::to_string(p->currentPoints);
-        forThisPlayer += std::string(" for this question");
+        forThisPlayer += std::string(" for this question\n");
+        
         if(!p->deadSocket && NetworkUtils::sendOnSocket(p->clientFd, forThisPlayer) == false)
         {
             shutdownAndClose(p->clientFd);

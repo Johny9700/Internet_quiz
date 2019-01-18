@@ -1,30 +1,168 @@
-Ile wynosi 2 + 2:
+In what year was Google launched on the web?:
+A: 1997
+B: 1998
+C: 1999
+D: 2001
+B
+What is the capital of Poland?:
+A: Warszawa
+B: Kraków
+C: Poznań
+D: Wrocław
+A
+In which year the Super Mario Galaxy game was released?:
+A: 2010
+B: 2012
+C: 2006
+D: 2007
+D
+How many bits make a byte?:
+A: 4
+B: 7
+C: 8
+D: 16
+C
+What is the name of the network of computers from which the Internet has emerged?:
+A: ALOHAnet
+B: Arpanet
+C: BITNET
+D: Net
+B
+In which year Windows Vista was released?:
+A: 2010
+B: 2012
+C: 2006
+D: 2007
+D
+What was the name of the first computer?:
+A: ENIAC
+B: UNIVAC
+C: SAGE
+D: EDVAC
+A
+Who founded Microsoft?:
+A: Bill Gates
+B: Steve Jobs
+C: Gabe Newell
+D: Larry Page
+A
+A network designed to allow communication within an organization is called?:
+A: Internet
+B: Ethernet
+C: Intranet
+D: Telnet
+C
+How many programming languages exists?:
+A: 50
+B: 500
+C: 150
+D: 2000
+D
+Which of the following is used to represent alphanumeric characters in Computers?:
+A: ASI
+B: ASCII
+C: ADA
+D: EDVAC
+B
+In which year Apple was founded?:
+A: 1987
+B: 1976
+C: 1992
+D: 2000
+B
+How much is 2 + 2?
 A: 1
 B: 2
 C: 3
 D: 4
 D
-Stolicą Polski jest:
-A: Warszawa
-B: Poznań
-C: Wrocław
-D: Kraków
+When did the compact disc first appear on the market?
+A: 1982
+B: 1989
+C: 1979
+D: 1992
 A
-bbb:
-A: aaa
-B: bbb
-C: ccc
-D: ddd
-B
-33:
-A: 11
-B: 22
-C: 33
-D: 44
+Who is the maker of the iPhone?
+A: IBM
+B: Microsoft
+C: Siemens
+D: Apple
+D
+Which company acquired the mobile phone maker Motorola Mobility in 2012?
+A: Microsoft
+B: Nokia
+C: Google
+D: IBM
 C
-66666:
-A: 66666
-B: 77777
-C: 88888
-D: 99999
+Which company is the maker of the popular Galaxy brand of smartphones.
+A: Samsung
+B: Sony
+C: Google
+D: Motorola
 A
+Which company got its start by selling books online? 
+A: Amazon
+B: Allegro
+C: Google
+D: Ebay
+A
+Which company is the number one manufacturer of semiconductor computer circuits, the guts of a computer?
+A: IBM
+B: AMD
+C: Intel
+D: Motorola
+C
+What kind of waves do radars use?
+A: Ultraviolet
+B: Microvawes
+C: Radio
+D: X-ray
+B
+What is the name for the mapped hexagonal geographic areas that make up the cellular phone grid?
+A: Pinns
+B: Containers
+C: Cells
+D: Hexs
+C
+What was the first animal launched into orbit?
+A: Dog
+B: Monkey
+C: Cat
+D: Hamster
+A
+How many bits are used in IPv6 addres?
+A: 32
+B: 128
+C: 80
+D: 64
+B
+How much is 42 - 26?
+A: 22
+B: 26
+C: 16
+D: 12
+C
+What number is considered unlucky by Italians?
+A: 13
+B: 4
+C: 17
+D: 7
+C
+What color is cobalt?
+A: Green
+B: Black
+C: Red
+D: Blue
+D
+Which unit indicates the light intensity?
+A: Candela
+B: Lumen
+C: Lux
+D: Ampere
+A
+Which planet is nearest the sun?
+A: Jupiter
+B: Earth
+C: Mars
+D: Mercury
+D
