@@ -176,8 +176,16 @@ void GameServer::gameThread()
 
 void GameServer::sendEndOfGameInfo()
 {
-    std::string message("24");
+    std::stringstream ss;
+    ss << "24";
+    
     std::unique_lock<std::mutex> lock(playersVectorLock);
+    std::sort(players.begin(), players.end(), [](Player *a, Player *b) {return a->score > b->score; });
+    for(auto p : players)
+    {
+        ss << p->name << ": " << p->score << "\n";
+    }
+    std::string message = ss.str();
     broadcastMessage(message);
 }
 
